@@ -172,6 +172,7 @@ collect_brief() {
   get_ecs_init_logs
   get_containers_info
   get_docker_logs
+  get_network_info
 }
 
 enable_debug() {
@@ -252,6 +253,8 @@ get_mounts_info()
     vgs > ${info_system}/vgs.txt
   fi
 
+  vmstat 1 5 > ${info_system}/vmstat.txt
+
   ok
 }
 
@@ -278,6 +281,18 @@ get_iptables_info()
   mkdir -p ${info_system}
   /sbin/iptables -nvL -t filter > ${info_system}/iptables-filter.txt
   /sbin/iptables -nvL -t nat  > ${info_system}/iptables-nat.txt
+
+  ok
+}
+
+get_network_info()
+{
+  try "get network information"
+
+  mkdir -p ${info_system}
+  /sbin/ip link > ${info_system}/ip_link.txt
+  /sbin/ip route ls > ${info_system}/ip_route.txt
+  /bin/netstat -i > ${info_system}/network_stats.txt
 
   ok
 }
