@@ -201,6 +201,7 @@ collect_brief() {
   get_ecs_agent_logs
   get_ecs_agent_info
   get_ecs_init_logs
+  get_docker_goroutines
 }
 
 enable_debug() {
@@ -582,6 +583,24 @@ enable_ecs_agent_debug() {
       warning "the current operating system is not supported."
       ;;
   esac
+}
+
+get_docker_goroutines() {
+  try "dump docker goroutine stacks"
+  dstdir="${info_system}/docker_stacks"
+  mkdir -p "${dstdir}"
+  # send SIGUSR1 to dump goroutines to
+  # /var/run/docker/goroutine-stacks-<date>.log
+  if kill -SIGUSR1 "$(pidof dockerd)" ; then
+    # give docker time to write the file
+    sleep 5
+    # find file and copy to our output
+    if  find /var/run/docker/ -cmin -1 -type f -name "goroutine-stacks*.log" -exec cp -p '{}' "$dstdir" \; ; then
+      ok
+      return
+    fi
+  fi
+  fail
 }
 
 # --------------------------------------------------------------------------------------------
